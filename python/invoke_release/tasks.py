@@ -13,7 +13,7 @@ from distutils.version import LooseVersion
 from invoke import task
 import six
 from six import moves
-from wheel import archive
+# from wheel import archive
 
 RE_CHANGELOG_FILE_HEADER = re.compile(r'^=+$')
 RE_CHANGELOG_VERSION_HEADER = re.compile(r'^-+$')
@@ -49,7 +49,7 @@ __all__ = [
     'configure_release_parameters',
     'version',
     'branch',
-    'wheel',
+    # 'wheel',
     'release',
     'rollback_release',
 ]
@@ -1325,22 +1325,22 @@ def rollback_release(_, verbose=False, no_stash=False):
         _cleanup_task(verbose)
 
 
-@task
-def wheel(_):
-    """
-    Builds a wheel archive of all files in the Git root directory.
+# @task
+# def wheel(_):
+#     """
+#     Builds a wheel archive of all files in the Git root directory.
 
-    Future possible changes: Upload to the wheel server.
-    """
-    build_instruction = _prompt('Build a wheel archive of {}? (Y/n):'.format(MODULE_DISPLAY_NAME)).lower()
+#     Future possible changes: Upload to the wheel server.
+#     """
+#     build_instruction = _prompt('Build a wheel archive of {}? (Y/n):'.format(MODULE_DISPLAY_NAME)).lower()
 
-    if build_instruction == INSTRUCTION_NO:
-        _standard_output('Aborting!')
-        return
+#     if build_instruction == INSTRUCTION_NO:
+#         _standard_output('Aborting!')
+#         return
 
-    base_dir = _get_root_directory()
-    archive_name = archive.make_wheelfile_inner(MODULE_NAME, _get_root_directory())
-    _standard_output('Successfully built the wheel archive {archive_name} at {base_dir}'.format(
-        archive_name=archive_name,
-        base_dir=base_dir
-    ))
+#     base_dir = _get_root_directory()
+#     archive_name = archive.make_wheelfile_inner(MODULE_NAME, _get_root_directory())
+#     _standard_output('Successfully built the wheel archive {archive_name} at {base_dir}'.format(
+#         archive_name=archive_name,
+#         base_dir=base_dir
+#     ))
