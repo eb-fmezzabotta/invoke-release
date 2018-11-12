@@ -13,7 +13,6 @@ from distutils.version import LooseVersion
 from invoke import task
 import six
 from six import moves
-# from wheel import archive
 
 RE_CHANGELOG_FILE_HEADER = re.compile(r'^=+$')
 RE_CHANGELOG_VERSION_HEADER = re.compile(r'^-+$')
@@ -49,7 +48,6 @@ __all__ = [
     'configure_release_parameters',
     'version',
     'branch',
-    # 'wheel',
     'release',
     'rollback_release',
 ]
@@ -1096,8 +1094,10 @@ def branch(_, verbose=False, no_stash=False):
     'verbose': 'Specify this switch to include verbose debug information in the command output.',
     'no-stash': 'Specify this switch to disable stashing any uncommitted changes (by default, changes that have '
                 'not been committed are stashed before the release is executed).',
+    'any-branch': 'Specify this switch to be able to tag a release from any branch (i.e. not master nor version '
+                'branches).'
 })
-def release(_, verbose=False, no_stash=False):
+def release(_, verbose=False, no_stash=False, any_branch=False):
     """
     Increases the version, adds a changelog message, and tags a new version of this project.
     """
@@ -1111,7 +1111,18 @@ def release(_, verbose=False, no_stash=False):
     version_regular_expression = RE_VERSION
 
     branch_name = _get_branch_name(verbose)
-    if branch_name != BRANCH_MASTER:
+    if any_branch:
+        instruction = _prompt(
+            'You are on branch "{}". This branch is neither "master" or a version branch. '
+            'Are you sure you want to release a version from this branch? (y/N):',
+            branch_name,
+        ).lower()
+
+        if instruction != INSTRUCTION_YES:
+            _standard_output('Canceling release!')
+            return
+
+    elif branch_name != BRANCH_MASTER:
         if not RE_VERSION_BRANCH_MAJOR.match(branch_name) and not RE_VERSION_BRANCH_MINOR.match(branch_name):
             _error_output(
                 'You are currently on branch "{}" instead of "master." You should only release from master or version '
@@ -1323,24 +1334,3 @@ def rollback_release(_, verbose=False, no_stash=False):
         _standard_output('Canceling release rollback!')
     finally:
         _cleanup_task(verbose)
-
-
-# @task
-# def wheel(_):
-#     """
-#     Builds a wheel archive of all files in the Git root directory.
-
-#     Future possible changes: Upload to the wheel server.
-#     """
-#     build_instruction = _prompt('Build a wheel archive of {}? (Y/n):'.format(MODULE_DISPLAY_NAME)).lower()
-
-#     if build_instruction == INSTRUCTION_NO:
-#         _standard_output('Aborting!')
-#         return
-
-#     base_dir = _get_root_directory()
-#     archive_name = archive.make_wheelfile_inner(MODULE_NAME, _get_root_directory())
-#     _standard_output('Successfully built the wheel archive {archive_name} at {base_dir}'.format(
-#         archive_name=archive_name,
-#         base_dir=base_dir
-#     ))
